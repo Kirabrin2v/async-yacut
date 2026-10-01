@@ -23,8 +23,6 @@ def index_view():
     if form.validate_on_submit():
         short_id = form.custom_id.data
         if short_id:
-            prohibited_URLs = RESERVED_URLS.copy()
-            prohibited_URLs.append(short_id)
             if (
                 URLMap.query.filter_by(short=short_id).first() is not None or
                 short_id in RESERVED_URLS
@@ -53,6 +51,6 @@ def index_view():
 
 @app.route('/<string:short_id>')
 def redirect_from_short(short_id):
-    url_map = URLMap.query.filter_by(short=short_id).first()
-    # Добавить проверку
+    url_map = URLMap.query.filter_by(short=short_id).first_or_404()
+
     return redirect(url_map.original)
