@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main>
+  <section class="container my-5 px-4">
+    <h1 class="text-center"><span style="color:red">Ya</span>Cut</h1>
+    <p class="text-center my-4">
+      Загрузите файлы и получите короткие ссылки для их скачивания
+    </p>
+
+    <div class="container">
+      <div class="row my-3">
+        <div class="col-sm">
+        </div>
+        <div class="col-sm">
+          <form method="POST" enctype="multipart/form-data" novalidate>
+            {{ form.csrf_token }}
+            {{ form.files(class="form-control form-control-lg py-2 mb-3", multiple=True) }}
+            {% if form.files.errors %}
+              <p>
+                <span style="color:red">
+                  {% for error in form.files.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </span>
+              </p>
+            {% endif %}
+            {{ form.submit(class="btn btn-primary") }}
+          </form>
+
+          <div class="container">
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                {% for message in messages %}
+                  <div class="row ">
+                    <div class="col-sm">
+                    </div>
+                    <div class="col-sm">
+                      <h5 class="text-center">{{ message }}</h5>
+                    </div>
+                    <div class="col-sm">
+                    </div>
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+          </div>
+        </div>
+        <div class="col-sm">
+        </div>
+      </div>
+
+      {% if files %}
+        <div class="row my-3">
+          <div class="col-sm">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">Имя файла</th>
+                  <th scope="col">Короткая ссылка</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for file in files %}
+                  <tr>
+                    <td>{{ file.filename }}</td>
+                    <td><a href="{{ file.short_link }}">{{ file.short_link }}</a></td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+  </section>
+</main>
+{% endblock %}

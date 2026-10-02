@@ -8,8 +8,13 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="nav nav-pills">
           <li class="nav-item">
-            <a class="nav-link" href="">
+            <a class="nav-link" href="{{ url_for('index_view') }}">
               Главная
+            </a>
+          </li>
+          <li>
+            <a class="nav-link" href="{{ url_for('files_view') }}">
+              Загрузка файлов
             </a>
           </li>
         </ul>
