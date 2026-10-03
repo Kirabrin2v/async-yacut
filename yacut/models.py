@@ -2,7 +2,7 @@ import random
 import re
 from datetime import datetime
 
-from flask import jsonify, url_for
+from flask import url_for
 
 from . import db
 from .constants import (ALLOWED_CHARS, DEFAULT_SHORT_ID_LENGTH, MAX_ATTEMPTS,
@@ -30,13 +30,15 @@ class URLMap(db.Model):
                 not re.fullmatch(SHORT_ID_PATTERN, custom_id)
             ):
                 raise InvalidShortIdError(
-                    f'ID не соответствует шаблону: {custom_id}'
+                    'Указано недопустимое имя для короткой ссылки'
                 )
             if (
                 custom_id in RESERVED_URLS or
                 cls.get_from_short_id(custom_id) is not None
             ):
-                raise ShortIdExistsError(f'ID уже существует: {custom_id}')
+                raise ShortIdExistsError(
+                    'Предложенный вариант короткой ссылки уже существует.'
+                )
         else:
             custom_id = cls.get_unique_short_id()
 
@@ -69,7 +71,7 @@ class URLMap(db.Model):
         )
 
     def to_dict(self):
-        return jsonify({
+        return {
             'url': self.original,
             'short_link': self.get_full_short_url(),
-        }), 201
+        }

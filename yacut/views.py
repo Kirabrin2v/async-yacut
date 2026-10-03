@@ -20,11 +20,11 @@ def index_view():
                 url=form.original_link.data,
                 custom_id=form.custom_id.data
             )
-        except InvalidShortIdError:
-            flash('Указано недопустимое имя для короткой ссылки')
-        except ShortIdExistsError:
-            flash('Предложенный вариант короткой ссылки уже существует.')
+        except (InvalidShortIdError, ShortIdExistsError) as error:
+            flash(str(error))
         except ShortIdGenerationError:
+            # Текст ошибки изменён, т.к. оригинальный
+            # предназначен только для разработчиков
             flash(
                 'Не удалось сгенерировать ID. '
                 'Попробуйте снова или введите вручную'

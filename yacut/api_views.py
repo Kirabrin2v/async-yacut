@@ -21,19 +21,17 @@ def create_id():
             url=data.get('url'),
             custom_id=data.get('custom_id')
         )
-    except InvalidShortIdError:
-        raise InvalidAPIUsage('Указано недопустимое имя для короткой ссылки')
-    except ShortIdExistsError:
-        raise InvalidAPIUsage(
-            'Предложенный вариант короткой ссылки уже существует.'
-        )
+    except (InvalidShortIdError, ShortIdExistsError) as error:
+        raise InvalidAPIUsage(str(error))
     except ShortIdGenerationError:
+        # Текст ошибки изменён, т.к. оригинальный
+        # предназначен только для разработчиков
         raise InvalidAPIUsage(
             'Не удалось сгенерировать ID. '
             'Попробуйте снова или заполните поле "custom_id"'
         )
 
-    return url_map.to_dict()
+    return jsonify(url_map.to_dict()), HTTPStatus.CREATED
 
 
 @app.route('/api/id/<string:short_id>/', methods=['GET'])
