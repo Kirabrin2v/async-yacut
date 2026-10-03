@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-<main>
   <section class="container my-5 px-4">
     <h1 class="text-center"><span style="color:red">Ya</span>Cut</h1>
     <p class="text-center my-4">
@@ -16,7 +15,6 @@
           <form method="POST" novalidate>
             {{ form.csrf_token }}
             {{ form.original_link(class="form-control form-control-lg py-2 mb-3", placeholder=form.original_link.label.text) }}
-            {% if form.original_link.errors %}
               <p>
                 <span style="color:red">
                   {% for error in form.original_link.errors %}
@@ -24,9 +22,7 @@
                   {% endfor %}
                 </span>
               </p>
-            {% endif %}
             {{ form.custom_id(class="form-control form-control-lg py-2 mb-3", placeholder=form.custom_id.label.text) }}
-            {% if form.custom_id.errors %}
               <p>
                 <span style="color:red">
                   {% for error in form.custom_id.errors %}
@@ -34,32 +30,30 @@
                   {% endfor %}
                 </span>
               </p>
-            {% endif %}
             {{ form.submit(class="btn btn-primary") }}
           </form>
 
           <div class="container">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-              {% if messages %}
-                {% for category, message in messages %}
+            {% with messages = get_flashed_messages() %}
+                {% for message in messages %}
                   <div class="row ">
                     <div class="col-sm">
-                    </div>
-                    <div class="col-sm">
                       <p class="text-center">
-                        {% if category == 'link' %}
-                          <p>Ваша новая ссылка: <a href="{{ message }}">{{ message }}</a></p>
-                        {% else %}
                           <h5 class="text-center">{{ message }}</h5>
-                        {% endif %}
                       </p>
-                    </div>
-                    <div class="col-sm">
                     </div>
                   </div>
                 {% endfor %}
-              {% endif %}
             {% endwith %}
+            {% if new_url %}
+              <div class="row ">
+                <div class="col-sm">
+                  <p class="text-center">
+                    <p>Ваша новая ссылка: <a href="{{ new_url }}">{{ new_url }}</a></p>
+                  </p>
+                </div>
+              </div>
+            {% endif %}
           </div>
         </div>
         <div class="col-sm">
@@ -68,5 +62,4 @@
     </div>
 
   </section>
-</main>
 {% endblock %}

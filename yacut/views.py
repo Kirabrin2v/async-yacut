@@ -45,8 +45,7 @@ def index_view():
             short_id=short_id,
             _external=True
         )
-        flash(new_url, 'link')
-        return render_template('url_map.html', form=form)
+        return render_template('url_map.html', form=form, new_url=new_url)
 
     return render_template('url_map.html', form=form)
 
