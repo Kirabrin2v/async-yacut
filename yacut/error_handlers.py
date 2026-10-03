@@ -3,6 +3,22 @@ from flask import jsonify, render_template
 from . import app, db
 
 
+class URLMapError(Exception):
+    """Базовая ошибка при работе с URLMap."""
+
+
+class InvalidShortIdError(URLMapError):
+    """Идентификатор не соответствует формату."""
+
+
+class ShortIdExistsError(URLMapError):
+    """Идентификатор уже занят или зарезервирован."""
+
+
+class ShortIdGenerationError(URLMapError):
+    """Не удалось сгенерировать уникальный идентификатор."""
+
+
 class InvalidAPIUsage(Exception):
     status_code = 400
 

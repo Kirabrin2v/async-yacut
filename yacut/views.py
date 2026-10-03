@@ -1,51 +1,32 @@
-import random
-
 import aiohttp
-from flask import flash, redirect, render_template, url_for
+from flask import abort, flash, redirect, render_template, url_for
 
 from . import app, db
-from .constants import (ALLOWED_CHARS, DEFAULT_SHORT_ID_LENGTH, MAX_ATTEMPTS,
-                        RESERVED_URLS)
+from .error_handlers import (InvalidShortIdError, ShortIdExistsError,
+                             ShortIdGenerationError)
 from .forms import FilesForm, URLMapForm
 from .models import URLMap
 from .yandex_disk import upload_files_to_disk
-
-
-def get_unique_short_id(length=DEFAULT_SHORT_ID_LENGTH):
-    for _ in range(MAX_ATTEMPTS):
-        short_id = ''.join(random.choices(ALLOWED_CHARS, k=length))
-        if not URLMap.query.filter_by(short=short_id).first():
-            return short_id
-    raise RuntimeError('Не удалось сгенерировать уникальный идентификатор.')
 
 
 @app.route('/', methods=['GET', 'POST'])
 def index_view():
     form = URLMapForm()
     if form.validate_on_submit():
-        short_id = form.custom_id.data
-        if short_id:
-            if (
-                URLMap.query.filter_by(short=short_id).first() is not None or
-                short_id in RESERVED_URLS
-            ):
-                flash('Предложенный вариант короткой ссылки уже существует.')
-                return render_template('url_map.html', form=form)
+        try:
+            url_map = URLMap.create_from_user_query(
+                url=form.original_link.data,
+                custom_id=form.custom_id.data
+            )
+        except InvalidShortIdError:
+            flash('Указано недопустимое имя для короткой ссылки')
+        except ShortIdExistsError:
+            flash('Предложенный вариант короткой ссылки уже существует.')
+        except ShortIdGenerationError:
+            flash('Не удалось сгенерировать ID. Попробуйте снова или введите вручную')
         else:
-            short_id = get_unique_short_id()
-        url_map = URLMap(
-            original=form.original_link.data,
-            short=short_id
-        )
-        db.session.add(url_map)
-        db.session.commit()
-
-        new_url = url_for(
-            'redirect_from_short',
-            short_id=short_id,
-            _external=True
-        )
-        return render_template('url_map.html', form=form, new_url=new_url)
+            new_url = url_map.get_full_short_url()
+            return render_template('url_map.html', form=form, new_url=new_url)
 
     return render_template('url_map.html', form=form)
 
@@ -65,13 +46,15 @@ async def files_view():
 
     uploaded = []
     for file, download_url in zip(files, download_urls):
-        short_id = get_unique_short_id()
-        db.session.add(URLMap(original=download_url, short=short_id))
+        try:
+            url_map = URLMap.create_from_user_query(url=download_url)
+        except ShortIdGenerationError:
+            flash('Возникла ошибка при генерации ссылки. Попробуйте ещё раз')
+            return render_template('files.html', form=form)
+
         uploaded.append({
             'filename': file.filename,
-            'short_link': url_for(
-                'redirect_from_short', short_id=short_id, _external=True
-            ),
+            'short_link': url_map.get_full_short_url(),
         })
     db.session.commit()
 
@@ -80,6 +63,8 @@ async def files_view():
 
 @app.route('/<string:short_id>')
 def redirect_from_short(short_id):
-    url_map = URLMap.query.filter_by(short=short_id).first_or_404()
+    url_map = URLMap.get_from_short_id(short_id)
+    if url_map is None:
+        abort(404)
 
     return redirect(url_map.original)
