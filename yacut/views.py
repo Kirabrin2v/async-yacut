@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 import aiohttp
 from flask import abort, flash, redirect, render_template, url_for
 
@@ -65,6 +67,6 @@ async def files_view():
 def redirect_from_short(short_id):
     url_map = URLMap.get_from_short_id(short_id)
     if url_map is None:
-        abort(404)
+        abort(HTTPStatus.NOT_FOUND)
 
     return redirect(url_map.original)
