@@ -28,10 +28,10 @@ def create_id():
             'Предложенный вариант короткой ссылки уже существует.'
         )
     except ShortIdGenerationError:
-            raise InvalidAPIUsage(
-                'Не удалось сгенерировать ID. '
-                'Попробуйте снова или заполните поле "custom_id"'
-            )
+        raise InvalidAPIUsage(
+            'Не удалось сгенерировать ID. '
+            'Попробуйте снова или заполните поле "custom_id"'
+        )
 
     return url_map.to_dict()
 

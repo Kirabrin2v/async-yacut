@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 import aiohttp
-from flask import abort, flash, redirect, render_template, url_for
+from flask import abort, flash, redirect, render_template
 
 from . import app, db
 from .error_handlers import (InvalidShortIdError, ShortIdExistsError,
@@ -25,7 +25,10 @@ def index_view():
         except ShortIdExistsError:
             flash('Предложенный вариант короткой ссылки уже существует.')
         except ShortIdGenerationError:
-            flash('Не удалось сгенерировать ID. Попробуйте снова или введите вручную')
+            flash(
+                'Не удалось сгенерировать ID. '
+                'Попробуйте снова или введите вручную'
+            )
         else:
             new_url = url_map.get_full_short_url()
             return render_template('url_map.html', form=form, new_url=new_url)
